@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { HttpService } from '@nestjs/axios';
@@ -7,35 +7,22 @@ import { AxiosError } from 'axios';
 
 @Injectable()
 export class EmployeesService {
-  //https://gorest.co.in/
-  private _CONFIG = {
-    baseURL: 'https://gorest.co.in/public/v2/users',
-    headers: {
-      Authorization:
-        'Bearer 1e97dcf6379991c4c8fda19eafaaf12d298f40b8a750a069c965918c0050cf26',
-    },
-  };
-
   //Check employee.module for HttpModule import
   constructor(private readonly httpService: HttpService) {}
 
   async create(createEmployeeDto: CreateEmployeeDto) {
     const { data } = await firstValueFrom(
-      this.httpService.post<CreateEmployeeDto>(
-        '',
-        createEmployeeDto,
-        this._CONFIG,
-      ),
+      this.httpService.post<CreateEmployeeDto>('', createEmployeeDto),
     );
     return data;
   }
 
   async findAll() {
     const { data } = await firstValueFrom(
-      this.httpService.get<CreateEmployeeDto[]>('', this._CONFIG).pipe(
+      this.httpService.get<CreateEmployeeDto[]>('').pipe(
         catchError((error: AxiosError) => {
           console.log(error);
-          throw error;
+          throw new HttpException(error.message, error.response.status);
         }),
       ),
     );
@@ -44,16 +31,25 @@ export class EmployeesService {
 
   async findOne(id: number) {
     const { data } = await firstValueFrom(
-      this.httpService.get<CreateEmployeeDto>(`/${id}`, this._CONFIG),
+      this.httpService.get<CreateEmployeeDto>(`/${id}`).pipe(
+        catchError((error: AxiosError) => {
+          console.log(error);
+          throw new HttpException(error.message, error.response.status);
+        }),
+      ),
     );
     return data;
   }
 
-  update(id: number, updateEmployeeDto: UpdateEmployeeDto) {
-    return updateEmployeeDto;
+  async update(id: number, updateEmployeeDto: UpdateEmployeeDto) {
+    const { data } = await firstValueFrom(
+      this.httpService.patch(`${id}`, updateEmployeeDto),
+    );
+    return data;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} employee`;
+  async remove(id: number) {
+    const { data } = await firstValueFrom(this.httpService.delete(`${id}`));
+    return data;
   }
 }
