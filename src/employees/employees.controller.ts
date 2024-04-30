@@ -7,8 +7,6 @@ import {
   Param,
   Delete,
   ParseIntPipe,
-  Query,
-  ParseBoolPipe,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
